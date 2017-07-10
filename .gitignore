@@ -35,6 +35,9 @@
 # Temp files
 *.*~
 
+# Eclipse project files
+*.project
+
 # Everything in the build folder
 build/*
 
