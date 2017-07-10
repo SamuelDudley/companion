@@ -1,0 +1,50 @@
+
+
+//    std::thread threadObj(thread_function);
+//    threadObj.detach();
+//    std::cout << "Display From MainThread" << std::endl;
+//
+//    xiAPIplusCameraOcv cam;
+//	cv::Mat capture;
+//	int nImages = 100;
+//	int nframeCount = 0;
+//	bool liveTracking = true;
+//	bool captureImages = true;
+////	try {
+//		if (liveTracking) {
+//			// XIMEA OpenCV
+//
+//			cam.OpenFirst();
+//			cam.StartAcquisition();
+////			cam.EnableAutoExposureAutoGain();
+//			cam.EnableHDR();
+////			cam.EnableWhiteBalanceAuto();
+////			cam.SetAutoExposureAutoGainExposurePriority(0.8f);
+//		}
+//
+//		std::cout << "Starting capture...";
+//		for(int ni=0; ni<nImages; ni++) {
+//			if (liveTracking) {
+//				capture = cam.GetNextImageOcvMat();
+//				cv::imshow("Image from camera", capture );
+//				if (captureImages) {
+//					cv::imwrite( "/tmp/images/"+std::to_string(nframeCount)+".jpg", capture );
+//					cv::namedWindow("Image");
+//					cv::imshow("Image", capture ); cv::waitKey();
+//					std::cout << "capture..." << nframeCount << std::endl;
+//					nframeCount++;
+//				}
+//			}
+//		}
+//
+//		cam.StopAcquisition();
+//		cam.Close();
+//
+//		std::cout<<"Exit of Main function"<<std::endl;
+//		return 0;
+//	}
+//	catch (xiAPIplus_Exception& exp) {
+//		std::cout << "An exception occured while opening the camera: " << std::endl;
+//		exp.PrintError(); // report error if some call fails
+//		return 1;
+//	}

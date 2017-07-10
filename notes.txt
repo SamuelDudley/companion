@@ -1,0 +1,8 @@
+ROI for omni cam:
+offset x: 218
+offset y: 218
+width 1664
+height 1664
+
+
+area auto white bal. 300 from top and sides (image is 1664 x 1664 after ROI)
