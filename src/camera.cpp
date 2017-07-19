@@ -1,11 +1,15 @@
-#include <camera.h>
+#include <camera.hpp>
 
 void camera_loop()
 {
-	// image buffer
-	XI_IMG image;
-	memset(&image,0,sizeof(image));
-	image.size = sizeof(XI_IMG);
+	/* This is launched as a thread
+	 * the camera is setup, and then we go into a capture and write to disk loop
+	 * if this is being used for real the image buffer will need to be copied
+	 * prior to be despatched for processing
+	 */
+
+
+	int image_counter=0;
 
 	// Sample for XIMEA API V4.05
 	HANDLE xiH = NULL;
@@ -23,7 +27,7 @@ void camera_loop()
 	// set acquisition to frame rate mode
 	xiSetParamInt(xiH,XI_PRM_ACQ_TIMING_MODE, XI_ACQ_TIMING_MODE_FRAME_RATE);
 	// set frame rate
-	xiSetParamInt(xiH,XI_PRM_FRAMERATE,20);
+	xiSetParamInt(xiH,XI_PRM_FRAMERATE,60);
 	int width_inc;
 	xiGetParamInt(xiH, XI_PRM_HEIGHT XI_PRM_INFO_INCREMENT, &width_inc);
 	std::cout << width_inc << std::endl;
@@ -34,7 +38,7 @@ void camera_loop()
 //	xiSetParamInt(xiH, XI_PRM_OFFSET_X, 218);
 
 	// https://www.ximea.com/support/wiki/apis/XiAPI_Manual#XI_PRM_TRANSPORT_DATA_TARGET-or-transport_data_target
-	xiSetParamInt(xiH, XI_PRM_RECENT_FRAME, 1); // get most recent image from buffer
+//	xiSetParamInt(xiH, XI_PRM_RECENT_FRAME, 1); // get most recent image from buffer
 
 	// Note:
 	// The default parameters of each camera might be different in different API versions
@@ -45,27 +49,33 @@ void camera_loop()
 	stat = xiStartAcquisition(xiH);
 	HandleResult(stat,"xiStartAcquisition");
 
+	// image buffer
+	XI_IMG image;
+	memset(&image,0,sizeof(image));
+	image.size = sizeof(XI_IMG);
 
-	#define EXPECTED_IMAGES 10
-	for (int images=0;images < EXPECTED_IMAGES;images++)
-	{
-
-
+	while (1) {
 		// getting image from camera
 		stat = xiGetImage(xiH, 5000, &image);
 		HandleResult(stat,"xiGetImage");
 		cv::Mat mat = cv::Mat(image.height, image.width, CV_8UC1, image.bp);
-		cv::imwrite( "/tmp/images/"+std::to_string(images)+".jpg", mat );
-		cv::namedWindow( "corners1", 1 );
-		cv::imshow( "corners1", mat );
-		cv::waitKey();
+		cv::imwrite( "/tmp/images/"+std::to_string(image_counter)+".jpg", mat);
+//		cv::namedWindow( "corners1", 1 );
+//		cv::imshow( "corners1", mat );
+//		cv::waitKey();
+		cv::Mat B = mat.clone(); // deep copy of mat image... we can safely send this off to be processed
+		image_counter++;
 
-		printf("Image %d (%dx%d) received from camera.\n", images, (int)image.width, (int)image.height);
+		printf("Image %d (%dx%d) received from camera.\n", image_counter, (int)image.width, (int)image.height);
 	}
+
+    // TODO: allow this thread to restart the camera and change settings
 
 	printf("Stopping acquisition...\n");
 	xiStopAcquisition(xiH);
 	xiCloseDevice(xiH);
 
 	return;
+
+
 }

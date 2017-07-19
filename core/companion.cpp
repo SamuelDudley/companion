@@ -1,8 +1,12 @@
-#include <camera.h>
-#include <includes.h>
+#include <camera.hpp>
+#include <includes.hpp>
+#include <unistd.h> // for creating symlinks and unlinking old ones
 #include <mutex>
+#include <fstream>
+#include <chrono>
+#include <ctime>
 
-#define MAVLINK_SYSTEM_ID 67
+#define MAVLINK_SYSTEM_ID 122
 #define MAVLINK_TARGET_SYSTEM_ID 1
 #define MAVLINK_COMM_NUM_BUFFERS 1
 #define MAVLINK_COMPONENT_ID_REMOTE_LOG 72
@@ -22,6 +26,8 @@ socklen_t fc_addrlen;
 
 # define MAVLINK_COMM_FC MAVLINK_COMM_0
 
+mavlink_camera_feedback_t camera_feedback;
+mavlink_heartbeat_t heartbeat;
 
 void handle_mavlink_msg(mavlink_message_t *msg)
 {
@@ -29,6 +35,8 @@ void handle_mavlink_msg(mavlink_message_t *msg)
 	{
 		case MAVLINK_MSG_ID_HEARTBEAT:
 		{
+			mavlink_msg_heartbeat_decode(msg, &heartbeat); // decode the message into the strut
+			std::cout << "got heartbeat "<< std::endl;
 			break;
 		}
 
@@ -58,14 +66,20 @@ void handle_mavlink_msg(mavlink_message_t *msg)
 		{
 			// we have triggered an image capture and the AP has sent this msg to let us know it saw the exposure pulse
 			// a corresponding message will be logged to the AP datalog
-//			std::cout << "got camera feedback msg: "<< &msg->time_usec << " : " << &msg->img_idx << std::endl;
+
+			mavlink_msg_camera_feedback_decode(msg, &camera_feedback); // decode the message into the strut
+			std::cout << "got camera feedback msg: "<< camera_feedback.time_usec << " : " << camera_feedback.img_idx << std::endl;
 			break;
 		}
+
+
 
 		default:
 		{
 			break;
 		}
+
+
 
 	} // end: switch msgid
 }
@@ -75,6 +89,15 @@ uint64_t get_time_usec()
 	static struct timeval _time_stamp;
 	gettimeofday(&_time_stamp, NULL);
 	return _time_stamp.tv_sec*1000000 + _time_stamp.tv_usec;
+}
+
+std::string get_date_string()
+{
+	auto t = std::time(nullptr);
+	auto tm = *std::localtime(&t);
+	char timebuff[120] = {0};
+	std::strftime(timebuff, 120, "%d%m%y_%H%M%S", &tm);
+	return std::string(timebuff);
 }
 
 /*
@@ -190,6 +213,14 @@ static int mavlink_serial_open(const char *path, unsigned baudrate)
  */
 static void select_loop()
 {
+	std::string raw_telem_filename = get_date_string() + ".tlog";
+	std::string last_log_filename = "last_log.tlog";
+	std::cout << raw_telem_filename << std::endl;
+	std::ofstream mav_file (raw_telem_filename, std::ofstream::out | std::ofstream::binary);
+
+	unlink(last_log_filename.c_str()); // unlink a symlink if it exists
+	symlink(raw_telem_filename.c_str(), last_log_filename.c_str()); // create a new symlink to the latest log file
+
 	while (1) {
 		fd_set fds;
 		struct timeval tv;
@@ -229,10 +260,16 @@ static void select_loop()
 				if (nread <= 0) {
 					/* printf("Read error from flight controller\n"); */
 				} else {
+					uint64_t current_time;
 					mavlink_message_t msg;
 					mavlink_status_t status;
 					for (uint16_t i=0; i<nread; i++) {
+//						mav_file << buf[i]; //this is the raw byte stream
 						if (mavlink_parse_char(MAVLINK_COMM_FC, buf[i], &msg, &status)) {
+							current_time = get_time_usec();
+							mav_file.write(reinterpret_cast<const char *>(&current_time), sizeof(current_time));
+							// these bytes contain a msg
+							mav_file.write((char*)buf, i+1);
 							handle_mavlink_msg(&msg);
 						}
 					}
@@ -261,29 +298,9 @@ static void select_loop()
 				}
 			}
 		}
-//		mavlink_message_t msg;
-//		int len = 0;
-//		mavlink_param_request_list_t req_list;
-//		req_list.target_component = 0;
-//		req_list.target_system = 1;
-//		mavlink_msg_param_request_list_encode(MAVLINK_SYSTEM_ID,
-//				MAVLINK_COMPONENT_ID_REMOTE_LOG,
-//											  &msg, &req_list);
-//		len = mavlink_fc_send(&msg);
-//		std::cout << "p!!! " << len << std::endl;
-//
-//		mavlink_heartbeat_t heart;
-//		heart.type = MAV_TYPE_ONBOARD_CONTROLLER;
-//		heart.autopilot = MAV_AUTOPILOT_INVALID;
-//		heart.base_mode = MAV_MODE_FLAG_AUTO_ENABLED;
-//		heart.system_status = MAV_STATE_ACTIVE;
-//		mavlink_msg_heartbeat_encode(MAVLINK_SYSTEM_ID,
-//											  MAVLINK_COMPONENT_ID_REMOTE_LOG,
-//											  &msg, &heart);
-//		len = mavlink_fc_send(&msg);
-//		std::cout << "h!!! " << len << std::endl;
-//		std::cout << get_time_usec() <<std::endl;
-	}
+	} // main while(1) loop
+	// we only get here is an exit is requested
+	mav_file.close();
 }
 
 

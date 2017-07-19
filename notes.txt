@@ -6,3 +6,7 @@ height 1664
 
 
 area auto white bal. 300 from top and sides (image is 1664 x 1664 after ROI)
+
+compile:
+update to the latest gcc / g++ compiler for cmake
+https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91#file-how-to-install-latest-gcc-on-ubuntu-lts-txt

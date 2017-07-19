@@ -35,6 +35,10 @@
 # Temp files
 *.*~
 
+# Mavlink log files
+*.tlog
+*.raw
+
 # Eclipse project files
 *.project
 

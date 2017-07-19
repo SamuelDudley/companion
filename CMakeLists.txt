@@ -12,11 +12,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native ")
 
 # Check C++11 support
 include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(COMPILER_SUPPORTS_CXX11)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-   add_definitions(-DCOMPILEDWITHC11)
-   message(STATUS "Using flag -std=c++11.")
+CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+if(COMPILER_SUPPORTS_CXX17)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+   add_definitions(-DCOMPILEDWITHC14)
+   message(STATUS "Using flag -std=c++17.")
 else()
    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
@@ -32,8 +32,8 @@ ${PROJECT_SOURCE_DIR}/generated
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 add_library(${PROJECT_NAME}
-src/xiApiPlusOcv.cc
-src/camera.cc
+src/xiApiPlusOcv.cpp
+src/camera.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -44,7 +44,7 @@ ${OpenCV_LIBS}
  
 # Build core project
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-add_executable(xi_companion core/companion.cc)
+add_executable(xi_companion core/companion.cpp)
 target_link_libraries(xi_companion ${PROJECT_NAME} -lpthread -ltalloc)
 
 
