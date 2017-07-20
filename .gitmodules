@@ -1,6 +1,6 @@
 [submodule "modules"]
 	path = modules
-	url = https://github.com/ArduPilot/mavlink.git
+	url = https://github.com/SamuelDudley/mavlink.git
 [submodule "modules/mavlink"]
 	path = modules/mavlink
-	url = https://github.com/ArduPilot/mavlink.git
+	url = https://github.com/SamuelDudley/mavlink.git
