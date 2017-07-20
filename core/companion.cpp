@@ -72,6 +72,34 @@ void handle_mavlink_msg(mavlink_message_t *msg)
 			break;
 		}
 
+		case MAVLINK_MSG_ID_MACHINE_VISION_FEEDBACK:
+		{
+			/*
+			<message id="12009" name="MACHINE_VISION_FEEDBACK">
+				<description>Report frame capture of machine vision camera</description>
+				<field type="uint8_t" name="target_system">System ID of companion computer</field>
+				<field type="uint8_t" name="target_component">Component ID</field>
+				<field type="uint64_t" name="ap_time_stamp">Autopilot frame capture time (us)</field>
+				<field type="uint64_t" name="ekf_time_stamp">EKF sample timestamp (us)</field>
+				<field type="uint16_t" name="frame_count">Current frame number in processing sequence</field>
+				<field type="float" name="roll" units="rad">Roll angle (rad, -pi..+pi)</field>
+				<field type="float" name="pitch" units="rad">Pitch angle (rad, -pi..+pi)</field>
+				<field type="float" name="yaw" units="rad">Yaw angle (rad, -pi..+pi)</field>
+				<field type="float" name="q1">Quaternion component 1, w (1 in null-rotation)</field>
+				<field type="float" name="q2">Quaternion component 2, x (0 in null-rotation)</field>
+				<field type="float" name="q3">Quaternion component 3, y (0 in null-rotation)</field>
+				<field type="float" name="q4">Quaternion component 4, z (0 in null-rotation)</field>
+				<field type="float" name="vel_x">velocity North (m/s)</field>
+				<field type="float" name="vel_y">velocity East (m/s)</field>
+				<field type="float" name="vel_z">velocity Down (m/s)</field>
+				<field type="float" name="pos_x">position North (m)</field>
+				<field type="float" name="pos_y">position East (m)</field>
+				<field type="float" name="pos_z">position Down (m)</field>
+			</message>
+			*/
+			break;
+		}
+
 
 
 		default:

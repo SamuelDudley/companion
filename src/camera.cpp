@@ -1,5 +1,30 @@
 #include <camera.hpp>
 
+	/*
+	<message id="12007" name="MACHINE_VISION_CAPTURE_CONTROL">
+		<description>Control on-board camera system</description>
+		<field type="uint8_t" name="target_system">System ID</field>
+		<field type="uint8_t" name="target_component">Component ID</field>
+		<field type="uint8_t" name="session">0: stop, 1: start or keep it up </field>
+		<field type="uint8_t" name="exposure_mode">0: manual, 1: auto</field>
+		<field type="float" name="target_framerate">target framerate in Hz</field>
+		<field type="uint8_t" name="command_id">Command Identity (incremental loop: 0 to 255)//A command sent multiple times will be executed or pooled just once</field>
+    </message>
+	<message id="12008" name="MACHINE_VISION_CAPTURE_STATUS">
+		<description>Information about the status of a camera</description>
+		<field type="uint8_t" name="target_system">System ID</field>
+		<field type="uint8_t" name="target_component">Component ID</field>
+		<field type="uint64_t" name="time_stamp" units="us">Timestamp (us)</field>
+		<field type="uint16_t" name="frame_count">Current frame number in processing sequence</field>
+		<field type="uint16_t" name="feedback_count">Current frame number in feedback (mavlink) sequence</field>
+		<field type="uint8_t" name="image_status">Current status of image capturing (0: not running, 1: interval capture in progress, 2: error)</field>
+		<field type="float" name="image_interval" units="Hz">Image capture interval in Hz</field>
+		<field type="float" name="available_capacity" units="Mibytes">Available storage capacity in MiB</field>
+	</message>
+
+ 	*/
+
+
 void camera_loop()
 {
 	/* This is launched as a thread
