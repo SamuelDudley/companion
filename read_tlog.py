@@ -1,11 +1,11 @@
 from pymavlink import mavutil
-import time, threading, select, sys
+import time
 
 
 filename = "last_log.tlog"
 
 m = mavutil.mavlink_connection(filename)
-m.notimestamps = False
+m.notimestamps = True
 m.timestamps_endian = '<'
 m.stop_on_EOF = True
 
