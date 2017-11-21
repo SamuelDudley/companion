@@ -1,4 +1,5 @@
 #include <camera.hpp>
+#include <associate.hpp>
 #include <includes.hpp>
 #include <unistd.h> // for creating symlinks and unlinking old ones
 #include <mutex>
@@ -316,7 +317,7 @@ static void select_loop() {
             }
         }
     } // main while(1) loop
-      // we only get here is an exit is requested
+      // we only get here if an exit is requested
     mav_file.close();
 }
 
@@ -374,6 +375,18 @@ int main(int argc, char *argv[]) {
 
 //    std::thread camera_thread(camera_loop);
 //    camera_thread.detach();
+    // make an assoication object
+    auto publisher = new Associator();
+
+    auto tmp = new Consumer(publisher, 111);
+    auto tmp1 = new Consumer(publisher, 222);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    publisher->invoke_callbacks();
+
+//    delete tmp;
+//    delete tmp1;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
     select_loop();
 }
 

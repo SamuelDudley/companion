@@ -34,6 +34,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 add_library(${PROJECT_NAME}
 src/xiApiPlusOcv.cpp
 src/camera.cpp
+src/associate.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
