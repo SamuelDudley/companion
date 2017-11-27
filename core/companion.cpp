@@ -1,19 +1,22 @@
-#include <camera.hpp>
+#include <common.hpp>
 #include <associate.hpp>
+#include <camera.hpp>
+#include <attitude.hpp>
+#include <consumer.hpp>
+
 #include <includes.hpp>
 #include <unistd.h> // for creating symlinks and unlinking old ones
 #include <mutex>
 #include <fstream>
 #include <chrono>
-#include <ctime>
+
 
 #define MAVLINK_SYSTEM_ID 122
 #define MAVLINK_TARGET_SYSTEM_ID 1
 #define MAVLINK_COMM_NUM_BUFFERS 1
 #define MAVLINK_COMPONENT_ID_REMOTE_LOG 72
 
-#include <mavlink/ardupilotmega/mavlink.h>
-#include <mavlink/mavlink_helpers.h>
+
 
 static int serial_port_fd = -1;
 static int fc_udp_in_fd = -1;
@@ -100,19 +103,7 @@ void handle_mavlink_msg(mavlink_message_t *msg) {
     } // end: switch msgid
 }
 
-uint64_t get_time_usec() {
-    static struct timeval _time_stamp;
-    gettimeofday(&_time_stamp, NULL);
-    return _time_stamp.tv_sec * 1000000 + _time_stamp.tv_usec;
-}
 
-std::string get_date_string() {
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    char timebuff[120] = { 0 };
-    std::strftime(timebuff, 120, "%d%m%y_%H%M%S", &tm);
-    return std::string(timebuff);
-}
 
 /*
  write some data to the flight controller
@@ -373,19 +364,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
-//    std::thread camera_thread(camera_loop);
-//    camera_thread.detach();
-    // make an assoication object
-    auto publisher = new Associator();
+    std::shared_ptr<Associator> associator = std::make_shared<Associator>();
 
-    auto tmp = new Consumer(publisher, 111);
-    auto tmp1 = new Consumer(publisher, 222);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    publisher->invoke_callbacks();
+//    std::unique_ptr<Camera> camera = std::make_unique<Camera>(associator, 333);
+    std::unique_ptr<Attitude> attitude = std::make_unique<Attitude>(associator, 333, 5555);
+    std::unique_ptr<Consumer> consumer1 = std::make_unique<Consumer>(associator, 333);
+    std::unique_ptr<Consumer> consumer2 = std::make_unique<Consumer>(associator, 333);
 
-//    delete tmp;
-//    delete tmp1;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    consumer1->start();
+    consumer2->start();
+//    camera->start();
+    attitude->start();
 
     select_loop();
 }

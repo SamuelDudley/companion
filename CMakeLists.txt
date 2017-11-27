@@ -35,6 +35,9 @@ add_library(${PROJECT_NAME}
 src/xiApiPlusOcv.cpp
 src/camera.cpp
 src/associate.cpp
+src/attitude.cpp
+src/consumer.cpp
+src/common.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
