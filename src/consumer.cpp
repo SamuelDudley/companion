@@ -23,7 +23,7 @@ void Consumer::run(void) {
         // block while attempting to get an item from the queue
         if ((_data_queue.wait_dequeue_timed(sp, std::chrono::milliseconds(_max_queue_block_ms)))) {
             // a callback event has occurred, we have a new item from the queue
-            std::cout << "got!" << sp << std::endl;
+            std::cout << "consumer got!" << sp << std::endl << std::endl;
 
             // do work with data here..
 

@@ -46,6 +46,7 @@ protected:
     void handle_mavlink_msg(mavlink_message_t *msg);
 
     mavlink_heartbeat_t heartbeat;
+    mavlink_camera_feedback_ahrs_t camera_feedback_ahrs;
 
     std::shared_ptr<Associator> _cc_associator; // pointer to associator object
     int _idx;

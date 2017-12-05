@@ -29,7 +29,7 @@ void Associator::process_incoming(void) {
             std::shared_ptr<Attitude_Data> data;
             data = std::static_pointer_cast<Attitude_Data>(tmp);
 
-            std::cout << "mavlink:" << data->feedback_cc_us <<  std::endl;
+            std::cout << "mavlink:" << data->feedback_cc_us << ' ' << data->msg.img_idx << std::endl;
 
             if (waiting_on_mavlink_data && !waiting_on_camera_data) {
                 // we were waiting for mavlink to associate with an image
@@ -52,6 +52,7 @@ void Associator::process_incoming(void) {
                         associated_data_entries.back()->complete = true;
                         state = IN_SYNC;
                         waiting_on_mavlink_data = false;
+                        std::cout << "in sync mavlink:" << data->feedback_cc_us - associated_data_entries.back()->cam->feedback_cc_us <<  std::endl;
                     } else {
                         // index offset between the camera and mavlink did not match
                         // we are out of sync
@@ -93,7 +94,7 @@ void Associator::process_incoming(void) {
             std::shared_ptr<Camera_Data> data;
             data = std::static_pointer_cast<Camera_Data>(tmp);
 
-            std::cout << "image:" << data->timestamp_s << ' ' << data->nframe <<  std::endl;
+            std::cout << "image:" << data->feedback_cc_us << ' ' << data->nframe <<  std::endl;
 
             if (waiting_on_camera_data && !waiting_on_mavlink_data) {
                 // we were waiting for camera data to associate with a mavlink message
@@ -116,6 +117,7 @@ void Associator::process_incoming(void) {
                         associated_data_entries.back()->complete = true;
                         state = IN_SYNC;
                         waiting_on_camera_data = false;
+                        std::cout << "in sync camera:" << data->feedback_cc_us - associated_data_entries.back()->msg->feedback_cc_us <<  std::endl;
                     } else {
                         // index offset between the camera and mavlink did not match
                         // we are out of sync
@@ -156,10 +158,13 @@ void Associator::process_incoming(void) {
 
         invoke_consumer_callbacks();
 
+        std::cout << "state:" << state << std::endl;
         switch (state) {
         case NOT_SYNCED: {
             // attempt to sync
+            // clear the unsynced state...
             associated_data_entries.clear(); // delete all entries in the vector
+            // start waiting on new data
             waiting_on_mavlink_data = true;
             waiting_on_camera_data = true;
 
@@ -180,12 +185,19 @@ void Associator::process_incoming(void) {
 // Invoke the functions that have registered with this associator
 void Associator::invoke_consumer_callbacks(void) {
     for(auto sp : associated_data_entries) {
-        for(auto& fun : _consumer_callbacks) {
-            // pass the shared pointer to the consumers by value
-            // the consumers determine when the AS_Data object will be cleaned up
-            fun(sp);
+        if (sp->modified == true) {
+            sp->modified = false;
+            for(auto& fun : _consumer_callbacks) {
+                // pass the shared pointer to the consumers by value
+                // the consumers determine when the AS_Data object will be cleaned up
+                fun(sp);
+            }
+            if (sp->complete == true) {
+                 sp->should_delete = true;
+            }
         }
     }
+    // TODO clean up the unneeded entries
 }
 
 //void create_new_container(void) {

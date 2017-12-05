@@ -62,6 +62,7 @@ void Attitude::run(void) {
                         current_time = get_time_usec();
                         // these bytes contain a msg
                         handle_mavlink_msg(&msg);
+                        _message_counter++;
                     }
                 }
             }
@@ -74,14 +75,18 @@ void Attitude::handle_mavlink_msg(mavlink_message_t *msg) {
         case MAVLINK_MSG_ID_HEARTBEAT: {
             mavlink_msg_heartbeat_decode(msg, &heartbeat); // decode the message into the strut
             std::cout << "got heartbeat in attitude " << std::endl;
-            std::shared_ptr<Data> sp(std::make_shared<Attitude_Data>(heartbeat, current_time));
+            break;
+        }
+        case MAVLINK_MSG_ID_CAMERA_FEEDBACK_AHRS: {
+            mavlink_msg_camera_feedback_ahrs_decode(msg, &camera_feedback_ahrs);
+            std::cout << "got camera feedback in attitude " << std::endl;
+            std::shared_ptr<Data> sp(std::make_shared<Attitude_Data>(camera_feedback_ahrs, current_time));
             bool succeeded = _cc_associator->in_data_queue.try_enqueue(std::move(sp));
             if (!succeeded) {
                 std::cout << "image data not on queue!" << std::endl;
                // the queue is full, either increase depth, increase rate on other end or drop the data
                // TODO handle failure
             }
-            _message_counter++;
             break;
         }
         default: {

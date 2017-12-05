@@ -5,10 +5,10 @@
 
 class Attitude_Data :public Data {
 public:
-    Attitude_Data(mavlink_heartbeat_t heartbeat, uint64_t feedback_time) :
+    Attitude_Data(mavlink_camera_feedback_ahrs_t camera_feedback_ahrs, uint64_t feedback_time) :
         Data(DT_ATTITUDE)
     {
-        msg = heartbeat;
+        msg = camera_feedback_ahrs;
         feedback_cc_us = feedback_time;
 
     }
@@ -16,6 +16,6 @@ public:
     ~Attitude_Data() {
     }
 
-    mavlink_heartbeat_t msg;
+    mavlink_camera_feedback_ahrs_t msg;
     uint64_t feedback_cc_us;
 };

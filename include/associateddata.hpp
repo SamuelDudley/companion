@@ -18,6 +18,7 @@ public:
     {
        complete = false;
        modified = false;
+       should_delete = false;
        std::cout << "constructed DATA!" << std::endl;
     }
 
@@ -29,5 +30,6 @@ public:
     std::shared_ptr<Attitude_Data> msg;
     std::shared_ptr<Camera_Data> cam;
     bool modified;
+    bool should_delete;
     // subscribers (weak ptr? of consumer objects?)
 };
